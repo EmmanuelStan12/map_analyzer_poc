@@ -169,10 +169,10 @@ class GeoPolygon:
         Returns:
             GeoPolygon: GeoPolygon object containing the point, or None if not found.
         """
-        cursor = conn.cursor()
+        cursor = conn.cursor(dictionary=True)
         try:
             query = """
-            SELECT *
+            SELECT *, ST_AsText(Coordinates) AS Geometry_ST
             FROM Geo_Polygon
             WHERE ST_Contains(Coordinates, POINT(%s, %s))
             """
@@ -213,6 +213,36 @@ class GeoPolygon:
 
             # Execute the query with the tuple of states
             cursor.execute(query, states)
+            rows = cursor.fetchall()
+            polygons = [GeoPolygon.from_db_row(row) for row in rows]
+            return polygons
+
+        except Exception as e:
+            print(f"Error finding polygons by state: {e}")
+            return []
+
+        finally:
+            cursor.close()
+
+    @staticmethod
+    def get_all_polygons(conn):
+        """
+        Get all polygons.
+
+        Args:
+            conn: Database connection object.
+
+        Returns:
+            list: List of all GeoPolygon objects.
+        """
+        cursor = conn.cursor(dictionary=True)
+        try:
+            query = """
+            SELECT *, ST_AsText(Coordinates) AS Geometry_ST FROM Geo_Polygon
+            """
+
+            # Execute the query with the tuple of states
+            cursor.execute(query)
             rows = cursor.fetchall()
             polygons = [GeoPolygon.from_db_row(row) for row in rows]
             return polygons

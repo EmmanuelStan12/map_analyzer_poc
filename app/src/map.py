@@ -1,5 +1,4 @@
 import os
-from math import cos
 
 import geopandas as gpd
 from lxml import etree
@@ -232,7 +231,7 @@ def extract_states(geo_df, states):
     return geo_df[geo_df['state'].isin(states)]
 
 
-def plot_geojson(geo_df, output_file):
+def plot_geo_dataframe(geo_df, output_file):
     """
     Plot a GeoDataFrame on a Folium map and save it as an HTML file.
 
@@ -267,7 +266,7 @@ def plot_geojson(geo_df, output_file):
     folium_map.save(output_file)
 
 
-def build_geojson_from_polygons(polygons):
+def build_geo_dataframe_from_polygons(polygons):
     """
     Build a GeoDataFrame from a list of polygon objects and return it.
 
@@ -299,7 +298,7 @@ def build_geojson_from_polygons(polygons):
     }
 
     # Create a GeoDataFrame
-    gdf = gpd.GeoDataFrame(polygons_data, crs='EPSG:4326')  # Assuming coordinates are in WGS84
+    gdf = gpd.GeoDataFrame(polygons_data, crs='EPSG:4326')
 
     # Optional: Set index if needed
     gdf.set_index('object_id', inplace=True)
@@ -307,7 +306,7 @@ def build_geojson_from_polygons(polygons):
     return gdf
 
 
-def extract_and_save_geojson_file(conn):
+def extract_and_save_geojson_file_as_polygons(conn):
     """
    Extracts polygons from a GeoJSON file, creates a grid, clips the grid with the input map,
    and saves the polygons to the database.
@@ -321,8 +320,8 @@ def extract_and_save_geojson_file(conn):
         raise ValueError("Environment variable GEOJSON_INPUT_PATH not set")
 
     # Declare width and height of each square in the grid in degrees
-    grid_size_metres = 33  # 32 km
-    width, height = metres_to_degrees(grid_size_metres)
+    grid_size_km = 33  # 33 km
+    width, height = kilometres_to_degrees(grid_size_km)
 
     # Read the geojson file
     input_map_gdf = read_geojson(geojson_path)
@@ -336,12 +335,12 @@ def extract_and_save_geojson_file(conn):
     GeoPolygon.batch_insert_geopolygon(conn, polygons)
 
 
-def metres_to_degrees(metres):
+def kilometres_to_degrees(kilometres):
     """
-    Converts a distance in metres to degrees.
+    Converts a distance in kilometres to degrees.
 
     Args:
-        metres (float): Distance in metres.
+        kilometres (float): Distance in kilometres.
 
     Returns:
         float: Distance in degrees.
@@ -350,12 +349,12 @@ def metres_to_degrees(metres):
     # but for latitude we use an approximate acceptable value which is 1 deg = 110.574km
     # however since the focus case is in nigeria, we can get the upper bounds and lower bounds of nigeria and
     # compute the average to get a better approximation of each width for a grid.
-    height = metres / 110.574
+    height = kilometres / 110.574
 
     # The value of longitude varies largely due to the distance between each line varies from the poles to the equator.
     # for longitude, deg = cos(latitude) * length of degrees at the equator (111.32km)
     # But for more accurate readings we can calculate this to get an average value of 109.85612km/deg
     # This can be done using the Circumference of the circle at the middle of nigeria divided by 360 deg.
     # From calculation this C(Nigeria) = 39,548.204929km
-    width = metres / 109.85612
+    width = kilometres / 109.85612
     return width, height

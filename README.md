@@ -1,3 +1,6 @@
+Here's an improved version of the README.md file for your Map Analyzer Proof of Concept project:
+
+
 # Map Analyzer Proof of Concept
 
 This project demonstrates the handling and visualization of geospatial data using Python. It involves creating, manipulating, and storing polygon geometries, and visualizing them on an interactive map.
@@ -151,17 +154,90 @@ CREATE TABLE Geo_Polygon
 - Readability and Context: Fields like State, CapCity, and Geo_Zone provide human-readable context, making it easier to understand the geographical information without needing to decode or look up state codes or object IDs.
 - Provenance and Traceability: The Source, Timestamp, Created_At, and Updated_At fields help in tracking the origin and changes to the data over time, which is crucial for data validation, auditing, and historical analysis.
 
+## Step-by-step Procedure
+
+### Algorithm to Break Map into Squares and Save Polygons to MySQL
+
+Here's a step-by-step algorithm for breaking the map into squares, calculating width and height, and saving each polygon in its MySQL entry:
+
+#### Step 1: Read GeoJSON File
+- Read the GeoJSON file containing the map data (Check `read_geojson(path)`).
+- This returns a GeoDataFrame data structure.
+
+#### Step 2: Calculate Grid Parameters
+- Determine the grid cell dimensions (width and height) based on the desired square size (e.g., 50 km).
+- Use the latitude to calculate the approximate width and height in degrees (Check `kilometres_to_degrees(kilometres)`).
+
+#### Step 3: Create Grid
+- Create a rectangular grid over the bounding box of the GeoDataFrame.
+- Use the calculated grid cell dimensions (in degrees) to define each grid cell (Check `create_grid(geo_df, grid_height, grid_width)`).
+
+#### Step 4: Clip Grid with Map
+- Clip the grid cells with the map to retain only the intersecting areas.
+- This ensures that each grid cell corresponds to a valid geographic area within the map boundaries (Check `clip_grid(grid_geo_df, map_geo_df)`).
+
+#### Step 5: Extract Polygons
+- Extract polygons from the clipped grid GeoDataFrame.
+- Convert each polygon into a GeoPolygon object, including its metadata and coordinates (Check `extract_polygons(geo_df, grid_height, grid_width)`).
+
+#### Step 6: Save to MySQL
+- Establish a connection to the MySQL database.
+- Define an SQL schema that includes fields for storing polygon attributes and the geometry.
+- Use SQL queries to insert each GeoPolygon object into the database, converting its coordinates to WKT format for storage (Check `GeoPolygon.batch_insert_geopolygon(conn, polygons)`).
+
+### Additional Operations
+
+- **Get Polygons by States, Points, or All:**
+    - Retrieve polygons based on state codes, specific points, or fetch all polygons stored in the database(Check `GeoPolygon.find_polygons_by_state(conn, states)`, `GeoPolygon.find_polygon_by_point(conn, longitude, latitude)` and `GeoPolygon.get_all_polygons(conn)`).
+
+- **Plot Polygons by Exporting as HTML:**
+    - Utilize Folium to export polygons as interactive HTML maps for visualization (Check `plot_geo_dataframe(geo_df, output_file)`).
+
+- **Export Polygons as KML:**
+    - Implement functionality to export polygons as KML files for use in other mapping applications (Check `export_to_kml(polygons, file_path, grid_height, grid_width)`).
+
+- **Export Polygons as GeoJSON:**
+    - Implement functionality to export geo dataframes as GeoJSON file (Check `export_to_geojson(geo_df, file_path)`).
+
 ## Usage
 
-1. **Setup Database Connection:**
-    - Update the database connection details in `main.py` with your MySQL database credentials.
+### Pre-requisites
 
-2. **Run the Project:**
-    - To extract and save GeoJSON data to the database:
-      ```bash
-      python main.py
-      ```
-    - This will read a GeoJSON file, create a grid overlay, clip the grid to regions, and save the resulting polygons to the database.
+1. Ensure you have Python installed. If not, download it from [Python Downloads](https://www.python.org/downloads/).
+2. Set up a virtual environment and activate it:
+    ```bash
+    python -m venv venv
+    # On Windows
+    venv\Scripts\activate
+    # On macOS/Linux
+    source venv/bin/activate
+    ```
+3. Install required libraries:
+    ```bash
+    pip install geopandas shapely folium pandas mysql-connector-python lxml pykml python-dotenv
+    ```
+4. Set up MySQL database:
+    - Create a database and execute the `geo_polygon.sql` script to set up the `Geo_Polygon` table schema.
 
-3. **Visualize Data:**
-    - The `main.py` script will also generate an interactive HTML map showing the polygons for specified states. Open the `output.html` file in a web browser to view the map.
+5. Configure environment variables:
+    - Copy `.env_example` to `.env` and adjust values as per your MySQL database configuration.
+
+6. Review and run the Python scripts:
+    - Uncomment `extract_and_save_geojson_file()` function if it's the first run to populate your database with initial data.
+    - Ensure other functions such as polygon extraction, database operations, and visualizations are tailored to your needs.
+
+### Running the Project
+
+- Navigate to your project directory and execute `main.py` to initiate the operations defined in your scripts.
+- Monitor console output for any errors or progress updates as the scripts execute.
+
+### Notes
+
+- Adjust grid size, polygon extraction logic, and visualization parameters as per your specific requirements and dataset characteristics.
+- Use `map.py` for additional functionalities such as exporting polygons to various formats or customizing visual outputs.
+
+## Conclusion
+
+The Map Analyzer Proof of Concept project showcases the capabilities of Python and its libraries for geospatial data handling. By following the steps outlined in this README, you can effectively manage, manipulate, and visualize polygonal data, enhancing your understanding and analysis of geographic regions.
+
+Feel free to reach out for further assistance or customization of this project!
