@@ -1,4 +1,4 @@
-# GeoPolygon Project
+# Map Analyzer Proof of Concept
 
 This project demonstrates the handling and visualization of geospatial data using Python. It involves creating, manipulating, and storing polygon geometries, and visualizing them on an interactive map.
 
