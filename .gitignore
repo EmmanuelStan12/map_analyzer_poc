@@ -1,0 +1,6 @@
+.idea
+map_venv
+*/**.geojson
+*/**.html
+*/**.kml
+.env
