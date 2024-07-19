@@ -246,7 +246,7 @@ def plot_geo_dataframe(geo_df, output_file):
         if pd.api.types.is_datetime64_any_dtype(geo_df[column].dtype):
             geo_df[column] = geo_df[column].astype(str)
 
-    # Re-project the GeoDataFrame to Web Mercator CRS
+    # Re-project the GeoDataFrame to Web Mercator CRS which is used by maps visualization tools
     geo_df = geo_df.to_crs(epsg=3857)
 
     # Get the centroid of the GeoDataFrame for the initial map center
