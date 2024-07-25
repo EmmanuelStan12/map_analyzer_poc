@@ -88,21 +88,75 @@ Folium is a Python library used for creating interactive maps. It allows you to 
 
 Shapely is a Python library for manipulation and analysis of planar geometric objects. It provides functionalities to create and work with points, lines, and polygons.
 
-## Project Structure
+The project "map_analyzer_poc" has been extracted. Here's a detailed overview and explanation of the project, including the algorithms and how everything is implemented.
 
-The project consists of three main files:
+### Project Structure
 
-1. **geo_polygon.py**
-    - Defines the `GeoPolygon` class for handling polygon geometries.
-    - Contains methods for initializing objects, saving to the database, and retrieving from the database.
+The project is structured as follows:
 
-2. **main.py**
-    - Entry point for the project.
-    - Connects to the MySQL database and performs operations like extracting polygons and visualizing them.
+```
+map_analyzer_poc-master/
+├── .env_example
+├── .gitignore
+├── README.md
+└── app/
+    └── src/
+        ├── __pycache__/
+        ├── data/
+        │   ├── ddl.sql
+        │   ├── dml.sql
+        │   ├── polygon_referenced_by_country.py
+        │   ├── polygon_referenced_by_state.py
+        │   └── state.py
+        ├── export.py
+        ├── extract.py
+        ├── grid.py
+        ├── main.py
+        ├── plot.py
+        ├── polygon.py
+        └── reader.py
+```
 
-3. **map.py**
-    - Contains functions for reading GeoJSON files, creating grids, clipping grids, and exporting data to different formats.
-    - Provides visualization functions using Folium.
+### Files and Their Functions
+
+#### 1. `.env_example`
+This file is likely used to provide an example of environment variables that need to be set for the project to run correctly.
+
+#### 2. `.gitignore`
+This file specifies files and directories that should be ignored by git. Common entries might include logs, temporary files, and environment variable files.
+
+#### 3. `README.md`
+This file provides an overview of the project, its purpose, and how to set it up. It usually includes instructions on how to install dependencies, run the project, and any other relevant information.
+
+#### 4. `app/src/`
+This directory contains the main source code for the project.
+
+##### a. `data/`
+This subdirectory includes scripts and files related to data handling:
+
+- `ddl.sql` and `dml.sql`: These files contain SQL scripts for data definition and data manipulation, respectively. They are used to create and populate the database tables.
+- `polygon_referenced_by_country.py`, `polygon_referenced_by_state.py`, `state.py`: These files contain Python classes that represent different entities in the project.
+
+##### b. `export.py`
+This script handles exporting data from the application to various formats, such as KML or GeoJSON.
+
+##### c. `extract.py`
+This script is responsible for extracting relevant data from input sources. It likely includes functions to parse and extract data from GeoJSON files or other spatial data formats.
+
+##### d. `grid.py`
+This script manages the creation of grids on maps. It includes functions to create grid cells and assign spatial data to these cells.
+
+##### e. `main.py`
+The main entry point of the application. This script initializes the application and orchestrates the execution of other scripts.
+
+##### f. `plot.py`
+This script handles plotting and visualization of spatial data. It includes functions to generate maps and other visual representations of the data.
+
+##### g. `polygon.py`
+This script includes functions and classes for handling polygon geometries, including creation, manipulation, and validation of polygons.
+
+##### h. `reader.py`
+This script includes functions to read and parse GeoJSON input files.
 
 ## GeoPolygon Data Structure
 
@@ -163,6 +217,9 @@ Here's a step-by-step algorithm for breaking the map into squares, calculating w
 #### Step 1: Read GeoJSON File
 - Read the GeoJSON file containing the map data (Check `read_geojson(path)`).
 - This returns a GeoDataFrame data structure.
+- This can return a GeoDataFrame, which contains data relative to how the data desired, it could be relative to the state or country.
+- When it is relative to the state, the data frame formed are more and have more boundaries that determine the borders of states in the map.
+- However, if it is country, those boundaries are dissolved.
 
 #### Step 2: Calculate Grid Parameters
 - Determine the grid cell dimensions (width and height) based on the desired square size (e.g., 50 km).
@@ -178,7 +235,7 @@ Here's a step-by-step algorithm for breaking the map into squares, calculating w
 
 #### Step 5: Extract Polygons
 - Extract polygons from the clipped grid GeoDataFrame.
-- Convert each polygon into a GeoPolygon object, including its metadata and coordinates (Check `extract_polygons(geo_df, grid_height, grid_width)`).
+- Convert each polygon into a GeoPolygon object, including its metadata and coordinates (Check `extract_polygons(geo_df, grid_height, grid_width, referenced_by_country)`).
 
 #### Step 6: Save to MySQL
 - Establish a connection to the MySQL database.
