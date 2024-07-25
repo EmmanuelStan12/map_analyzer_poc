@@ -217,7 +217,7 @@ Here's a step-by-step algorithm for breaking the map into squares, calculating w
     pip install geopandas shapely folium pandas mysql-connector-python lxml pykml python-dotenv
     ```
 4. Set up MySQL database:
-    - Create a database and execute the `geo_polygon.sql` script to set up the `Geo_Polygon` table schema.
+    - Create a database and execute the `ddl.sql` script to set up the `Geo_Polygon` table schema.
 
 5. Configure environment variables:
     - Copy `.env_example` to `.env` and adjust values as per your MySQL database configuration.

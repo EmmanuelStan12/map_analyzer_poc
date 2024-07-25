@@ -2,11 +2,13 @@ import json
 from shapely.geometry import Polygon
 import shapely.wkt as wkt
 
+from app.src.data.state import State
 
-class GeoPolygon:
 
-    def __init__(self, pid=None, object_id=None, state_code=None, state=None, cap_city=None, source=None,
-                 shape_area=None, shape_length=None, geo_zone=None, timestamp=None, created_at=None, updated_at=None,
+class PolygonReferencedByState:
+
+    def __init__(self, pid=None, object_id=None, cap_city=None, state=None, source=None,
+                 shape_area=None, shape_length=None, geo_zone=None, created_at=None, updated_at=None,
                  coordinates=None, metadata=None):
         """
         Initialize a GeoPolygon object.
@@ -14,14 +16,12 @@ class GeoPolygon:
         Args:
             pid (int): Polygon ID.
             object_id (str): Object ID.
-            state_code (str): State code.
-            state (str): State name.
             cap_city (str): Capital city.
+            state (State): State.
             source (str): Source of data.
             shape_area (float): Area of the polygon.
             shape_length (float): Perimeter of the polygon.
             geo_zone (str): Geographical zone.
-            timestamp (str): Timestamp.
             created_at (str): Creation timestamp.
             updated_at (str): Last update timestamp.
             coordinates (list of tuples): List of (longitude, latitude) coordinates defining the polygon.
@@ -29,14 +29,12 @@ class GeoPolygon:
         """
         self.id = pid
         self.object_id = object_id
-        self.state_code = state_code
         self.state = state
         self.cap_city = cap_city
         self.source = source
         self.shape_area = shape_area
         self.shape_length = shape_length
         self.geo_zone = geo_zone
-        self.timestamp = timestamp
         self.created_at = created_at
         self.updated_at = updated_at
         self.coordinates = coordinates
@@ -51,22 +49,21 @@ class GeoPolygon:
             row (dict): Database row containing polygon data.
 
         Returns:
-            GeoPolygon: Initialized GeoPolygon object.
+            PolygonReferencedByState: Initialized GeoPolygon object.
         """
         metadata = json.loads(row['Metadata'])
         polygon = wkt.loads(row['Geometry_ST'])
         coordinates = list(polygon.exterior.coords)
+        state_id = row['State_Id']
         return cls(
             pid=row['Id'],
             object_id=row['ObjectId'],
-            state_code=row['StateCode'],
-            state=row['State'],
             cap_city=row['CapCity'],
+            state=State.get_states_by_id()[state_id],
             source=row['Source'],
             shape_area=row['Shape_Area'],
             shape_length=row['Shape_Length'],
             geo_zone=row['Geo_Zone'],
-            timestamp=row['Timestamp'],
             created_at=row['Created_At'],
             updated_at=row['Updated_At'],
             coordinates=coordinates,
@@ -83,18 +80,18 @@ class GeoPolygon:
         cursor = conn.cursor()
         try:
             insert_query = """
-            INSERT INTO Geo_Polygon (ObjectId, StateCode, State, CapCity, Source,
+            INSERT INTO Polygon_Referenced_By_State (ObjectId, CapCity, Source, State_Id,
                                      Shape_Area, Shape_Length, Geo_Zone,
                                      Timestamp, Created_At, Updated_At, Coordinates, Metadata)
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, ST_GeomFromText(%s), %s)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, ST_GeomFromText(%s), %s)
             """
 
             metadata_str = json.dumps(self.metadata)
             cursor.execute(insert_query, (
-                self.object_id, self.state_code, self.state, self.cap_city,
-                self.source, self.shape_area, self.shape_length, self.geo_zone,
+                self.object_id, self.cap_city,
+                self.source, self.state.sid, self.shape_area, self.shape_length, self.geo_zone,
                 self.timestamp, self.created_at, self.updated_at,
-                GeoPolygon.coordinates_to_wkt_polygon(self.coordinates),
+                PolygonReferencedByState.coordinates_to_wkt_polygon(self.coordinates),
                 metadata_str
             ))
             conn.commit()
@@ -128,21 +125,21 @@ class GeoPolygon:
 
         Args:
             conn: Database connection object.
-            polygons (list of GeoPolygon): List of GeoPolygon objects to insert.
+            polygons (list of PolygonReferencedByState): List of GeoPolygon objects to insert.
         """
         cursor = conn.cursor()
         try:
             insert_query = """
-            INSERT INTO Geo_Polygon (ObjectId, StateCode, State, CapCity, Source,
+            INSERT INTO Polygon_Referenced_By_State (ObjectId, CapCity, Source, State_Id,
                                      Shape_Area, Shape_Length, Geo_Zone,
-                                     Timestamp, Created_At, Updated_At, Coordinates, Metadata)
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, ST_GeomFromText(%s), %s)
+                                     Created_At, Updated_At, Coordinates, Metadata)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, ST_GeomFromText(%s), %s)
             """
 
-            data = [(gp.object_id, gp.state_code, gp.state, gp.cap_city,
-                     gp.source, gp.shape_area, gp.shape_length, gp.geo_zone,
-                     gp.timestamp, gp.created_at, gp.updated_at,
-                     GeoPolygon.coordinates_to_wkt_polygon(gp.coordinates),
+            data = [(gp.object_id, gp.cap_city,
+                     gp.source, gp.state.sid, gp.shape_area, gp.shape_length, gp.geo_zone,
+                     gp.created_at, gp.updated_at,
+                     PolygonReferencedByState.coordinates_to_wkt_polygon(gp.coordinates),
                      json.dumps(gp.metadata))
                     for gp in polygons]
 
@@ -167,20 +164,20 @@ class GeoPolygon:
             latitude (float): Latitude of the point.
 
         Returns:
-            GeoPolygon: GeoPolygon object containing the point, or None if not found.
+            PolygonReferencedByState: GeoPolygon object containing the point, or None if not found.
         """
         cursor = conn.cursor(dictionary=True)
         try:
             query = """
             SELECT *, ST_AsText(Coordinates) AS Geometry_ST
-            FROM Geo_Polygon
+            FROM Polygon_Referenced_By_State
             WHERE ST_Contains(Coordinates, POINT(%s, %s))
             """
 
             cursor.execute(query, (longitude, latitude))
             row = cursor.fetchone()
             if row:
-                return GeoPolygon.from_db_row(row)
+                return PolygonReferencedByState.from_db_row(row)
             else:
                 print(f"No polygon contains point ({longitude}, {latitude})")
                 return None
@@ -207,14 +204,15 @@ class GeoPolygon:
         cursor = conn.cursor(dictionary=True)
         try:
             query = """
-            SELECT *, ST_AsText(Coordinates) AS Geometry_ST FROM Geo_Polygon
-            WHERE State IN ({})
+            SELECT gp.*, ST_AsText(Coordinates) AS Geometry_ST FROM Polygon_Referenced_By_State gp
+            LEFT JOIN State AS s ON gp.State_Id = s.Id
+            WHERE s.Name IN ({})
             """.format(', '.join(['%s'] * len(states)))
 
             # Execute the query with the tuple of states
             cursor.execute(query, states)
             rows = cursor.fetchall()
-            polygons = [GeoPolygon.from_db_row(row) for row in rows]
+            polygons = [PolygonReferencedByState.from_db_row(row) for row in rows]
             return polygons
 
         except Exception as e:
@@ -238,13 +236,13 @@ class GeoPolygon:
         cursor = conn.cursor(dictionary=True)
         try:
             query = """
-            SELECT *, ST_AsText(Coordinates) AS Geometry_ST FROM Geo_Polygon
+            SELECT *, ST_AsText(Coordinates) AS Geometry_ST FROM Polygon_Referenced_By_State
             """
 
             # Execute the query with the tuple of states
             cursor.execute(query)
             rows = cursor.fetchall()
-            polygons = [GeoPolygon.from_db_row(row) for row in rows]
+            polygons = [PolygonReferencedByState.from_db_row(row) for row in rows]
             return polygons
 
         except Exception as e:
@@ -261,4 +259,4 @@ class GeoPolygon:
         Returns:
             str: String representation of the GeoPolygon object.
         """
-        return f"<GeoPolygon(Id={self.id}, State={self.state}, Coordinates={self.coordinates})>"
+        return f"<PolygonReferencedByState(Id={self.id}, State={self.state}, Coordinates={self.coordinates})>"
