@@ -55,11 +55,17 @@ class PolygonReferencedByState:
         polygon = wkt.loads(row['Geometry_ST'])
         coordinates = list(polygon.exterior.coords)
         state_id = row['State_Id']
+
+        states = State.get_states_by_id()
+        state = None
+        if state_id in states:
+            state = states[state_id]
+
         return cls(
             pid=row['Id'],
             object_id=row['ObjectId'],
             cap_city=row['CapCity'],
-            state=State.get_states_by_id()[state_id],
+            state=state,
             source=row['Source'],
             shape_area=row['Shape_Area'],
             shape_length=row['Shape_Length'],
@@ -87,9 +93,12 @@ class PolygonReferencedByState:
             """
 
             metadata_str = json.dumps(self.metadata)
+            sid = ''
+            if self.state is not None:
+                sid = self.state.sid
             cursor.execute(insert_query, (
                 self.object_id, self.cap_city,
-                self.source, self.state.sid, self.shape_area, self.shape_length, self.geo_zone, self.created_at, self.updated_at,
+                self.source, sid, self.shape_area, self.shape_length, self.geo_zone, self.created_at, self.updated_at,
                 PolygonReferencedByState.coordinates_to_wkt_polygon(self.coordinates),
                 metadata_str
             ))
@@ -136,8 +145,8 @@ class PolygonReferencedByState:
             """
 
             data = [(gp.object_id, gp.cap_city,
-                     gp.source, gp.state.sid, gp.shape_area, gp.shape_length, gp.geo_zone,
-                     gp.created_at, gp.updated_at,
+                     gp.source, gp.state.sid if gp.state is not None else None, gp.shape_area, gp.shape_length,
+                     gp.geo_zone, gp.created_at, gp.updated_at,
                      PolygonReferencedByState.coordinates_to_wkt_polygon(gp.coordinates),
                      json.dumps(gp.metadata))
                     for gp in polygons]

@@ -15,7 +15,7 @@ CREATE TABLE Polygon_Referenced_By_State
 (
     Id           BIGINT AUTO_INCREMENT PRIMARY KEY,
     ObjectId     BIGINT       NULL,
-    State_Id     BIGINT       NOT NULL,
+    State_Id     BIGINT       NULL,
     CapCity      VARCHAR(50)  NULL,
     Source       VARCHAR(255) NULL,
     Shape_Area   FLOAT        NULL,

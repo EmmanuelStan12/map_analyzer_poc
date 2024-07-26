@@ -94,8 +94,8 @@ def build_geo_dataframe_from_polygons_by_state(polygons):
     """
     polygons_data = {
         'object_id': [polygon.object_id for polygon in polygons],
-        'state_code': [polygon.state.code for polygon in polygons],
-        'state': [polygon.state.name for polygon in polygons],
+        'state_code': [(polygon.state.code if polygon.state is not None else '') for polygon in polygons],
+        'state': [(polygon.state.name if polygon.state is not None else '') for polygon in polygons],
         'cap_city': [polygon.cap_city for polygon in polygons],
         'source': [polygon.source for polygon in polygons],
         'shape_area': [polygon.shape_area for polygon in polygons],

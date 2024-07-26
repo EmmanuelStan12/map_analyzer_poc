@@ -39,20 +39,26 @@ def create_state_polygon(geom, grid_height, grid_width, i, max_x, max_y, min_x, 
     # Extract coordinates from the geometry
     coords = list(geom.exterior.coords)
 
-    # Retrieve the state object by its code
-    state = State.get_states_by_code()[props['statecode']]
+    props_getter = lambda key: props[key] if key in props else ''
+
+    # Retrieve the state object by its code, this only applies for geojson with statecode as a prop parameter.
+    code = props_getter('statecode')
+    states = State.get_states_by_code()
+    state = None
+    if code in states:
+        state = states[code]
 
     # Create and return the PolygonReferencedByState object
     return PolygonReferencedByState(
-        object_id=props['objectid'],
+        object_id=props_getter('objectid'),
         state=state,
-        cap_city=props['capcity'],
-        source=props['source'],
-        shape_area=props['shape_area'],
-        shape_length=props['shape_len'],
-        geo_zone=props['geozone'],
-        created_at=props['created_at'],
-        updated_at=props['updated_at'],
+        cap_city=props_getter('capcity'),
+        source=props_getter('source'),
+        shape_area=props_getter('shape_area'),
+        shape_length=props_getter('shape_len'),
+        geo_zone=props_getter('geozone'),
+        created_at=props_getter('created_at'),
+        updated_at=props_getter('updated_at'),
         coordinates=coords,
         metadata=metadata,
     )
@@ -79,10 +85,12 @@ def create_country_polygon(geom, grid_height, grid_width, i, max_x, max_y, min_x
     # Extract coordinates from the geometry
     coords = list(geom.exterior.coords)
 
+    props_getter = lambda key: props[key] if key in props else ''
+
     # Create and return the PolygonReferencedByCountry object
     return PolygonReferencedByCountry(
-        shape_area=props['shape_area'],
-        shape_length=props['shape_len'],
+        shape_area=props_getter('shape_area'),
+        shape_length=props_getter('shape_len'),
         coordinates=coords
     )
 
