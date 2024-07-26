@@ -1,6 +1,3 @@
-Here's an improved version of the README.md file for your Map Analyzer Proof of Concept project:
-
-
 # Map Analyzer Proof of Concept
 
 This project demonstrates the handling and visualization of geospatial data using Python. It involves creating, manipulating, and storing polygon geometries, and visualizing them on an interactive map.
@@ -31,12 +28,12 @@ The GeoPolygon project is designed to work with geospatial data, specifically po
 1. **Install Python:**
     - Download and install Python from the official website: [Python Downloads](https://www.python.org/downloads/).
 
-2. **Set up a virtual environment:**
+2. **Set up a virtual environment (Optional):**
     - Create a virtual environment:
       ```bash
       python -m venv venv
       ```
-    - Activate the virtual environment (Optional):
+    - Activate the virtual environment:
         - On Windows:
           ```bash
           venv\\Scripts\\activate
@@ -101,10 +98,9 @@ map_analyzer_poc-master/
 ├── README.md
 └── app/
     └── src/
-        ├── __pycache__/
         ├── data/
         │   ├── ddl.sql
-        │   ├── dml.sql
+        │   ├── nigeria_state_dml.sql
         │   ├── polygon_referenced_by_country.py
         │   ├── polygon_referenced_by_state.py
         │   └── state.py
@@ -134,7 +130,7 @@ This directory contains the main source code for the project.
 ##### a. `data/`
 This subdirectory includes scripts and files related to data handling:
 
-- `ddl.sql` and `dml.sql`: These files contain SQL scripts for data definition and data manipulation, respectively. They are used to create and populate the database tables.
+- `ddl.sql` and `nigeria_state_dml.sql`: These files contain SQL scripts for data definition and data manipulation, respectively. They are used to create and populate the database tables.
 - `polygon_referenced_by_country.py`, `polygon_referenced_by_state.py`, `state.py`: These files contain Python classes that represent different entities in the project.
 
 ##### b. `export.py`
@@ -160,27 +156,49 @@ This script includes functions to read and parse GeoJSON input files.
 
 ## GeoPolygon Data Structure
 
-### Database Table: Geo_Polygon
+### Database Table: `Polygon_Referenced_By_State`, `Polygon_Referenced_By_Country` and `State`
 
-The `Geo_Polygon` table is designed to store polygon data for geographical regions. Here is the SQL schema for the table:
+The `State` table is designed to store state metadata for a certain country.
 
 ```sql
-CREATE TABLE Geo_Polygon
+CREATE TABLE State
+(
+    Id   BIGINT AUTO_INCREMENT PRIMARY KEY,
+    Code VARCHAR(10)  NOT NULL,
+    Name VARCHAR(100) NOT NULL
+);
+```
+
+The `Polygon_Referenced_By_State` table is designed to store polygon data for geographical regions where the clipping respects the state boundaries. Here is the SQL schema for the table:
+
+```sql
+CREATE TABLE Polygon_Referenced_By_State
 (
     Id           BIGINT AUTO_INCREMENT PRIMARY KEY,
     ObjectId     BIGINT       NULL,
-    StateCode    VARCHAR(2)   NULL,
-    `State`      VARCHAR(50)  NULL,
+    State_Id     BIGINT       NOT NULL,
     CapCity      VARCHAR(50)  NULL,
-    `Source`     VARCHAR(255) NULL,
+    Source       VARCHAR(255) NULL,
     Shape_Area   FLOAT        NULL,
     Shape_Length FLOAT        NULL,
     Geo_Zone     VARCHAR(50)  NULL,
-    `Timestamp`  DATETIME     NULL,
     Created_At   DATETIME     NULL,
     Updated_At   DATETIME     NULL,
     Coordinates  GEOMETRY     NOT NULL,
-    Metadata     LONGTEXT     NULL
+    Metadata     LONGTEXT     NULL,
+    CONSTRAINT FOREIGN KEY (State_Id) REFERENCES State (Id)
+);
+```
+
+The `Polygon_Referenced_By_Country` table is designed to store polygon data for geographical regions where the clipping respects the country's boundaries but ignores the state boundaries. Here is the SQL schema for the table:
+
+```sql
+CREATE TABLE Polygon_Referenced_By_Country
+(
+    Id           BIGINT AUTO_INCREMENT PRIMARY KEY,
+    Shape_Area   FLOAT        NULL,
+    Shape_Length FLOAT        NULL,
+    Coordinates  GEOMETRY     NOT NULL
 );
 ```
 
@@ -207,6 +225,8 @@ CREATE TABLE Geo_Polygon
 - Data Integrity: Using specific data types like BIGINT for IDs and VARCHAR for strings ensures data integrity and appropriate storage allocation. The structure also ensures that important fields like Coordinates are not null, maintaining the integrity of the geographical data.
 - Readability and Context: Fields like State, CapCity, and Geo_Zone provide human-readable context, making it easier to understand the geographical information without needing to decode or look up state codes or object IDs.
 - Provenance and Traceability: The Source, Timestamp, Created_At, and Updated_At fields help in tracking the origin and changes to the data over time, which is crucial for data validation, auditing, and historical analysis.
+
+This explanation and reasons for the chosen structure applies to the `Polygon_Referenced_By_State` and `Polygon_Referenced_By_Country` tables.
 
 ## Step-by-step Procedure
 
@@ -240,12 +260,15 @@ Here's a step-by-step algorithm for breaking the map into squares, calculating w
 #### Step 6: Save to MySQL
 - Establish a connection to the MySQL database.
 - Define an SQL schema that includes fields for storing polygon attributes and the geometry.
-- Use SQL queries to insert each GeoPolygon object into the database, converting its coordinates to WKT format for storage (Check `GeoPolygon.batch_insert_geopolygon(conn, polygons)`).
+- Use SQL queries to insert each GeoPolygon object into the database, converting its coordinates to WKT format for storage (Check `<Polygon table>.batch_insert_geopolygon(conn, polygons)`).
 
 ### Additional Operations
 
-- **Get Polygons by States, Points, or All:**
-    - Retrieve polygons based on state codes, specific points, or fetch all polygons stored in the database(Check `GeoPolygon.find_polygons_by_state(conn, states)`, `GeoPolygon.find_polygon_by_point(conn, longitude, latitude)` and `GeoPolygon.get_all_polygons(conn)`).
+- **Get Polygons Points or All:**
+    - Retrieve polygons based on state codes, specific points, or fetch all polygons stored in the database(Check `<Polygon table>.find_polygon_by_point(conn, longitude, latitude)` and `<Polygon table>.get_all_polygons(conn)`).
+
+- **Get Polygons by State:**
+    - Retrieve polygons based on state codes stored in the database, this only applies to `Polygon_Referenced_By_State` (Check `<Polygon table>.find_polygons_by_state(conn, states)`).
 
 - **Plot Polygons by Exporting as HTML:**
     - Utilize Folium to export polygons as interactive HTML maps for visualization (Check `plot_geo_dataframe(geo_df, output_file)`).
@@ -261,7 +284,7 @@ Here's a step-by-step algorithm for breaking the map into squares, calculating w
 ### Pre-requisites
 
 1. Ensure you have Python installed. If not, download it from [Python Downloads](https://www.python.org/downloads/).
-2. Set up a virtual environment and activate it:
+2. Set up a virtual environment and activate it (Optional):
     ```bash
     python -m venv venv
     # On Windows
@@ -274,7 +297,8 @@ Here's a step-by-step algorithm for breaking the map into squares, calculating w
     pip install geopandas shapely folium pandas mysql-connector-python lxml pykml python-dotenv
     ```
 4. Set up MySQL database:
-    - Create a database and execute the `ddl.sql` script to set up the `Geo_Polygon` table schema.
+    - Create a database and execute the `ddl.sql` script to set up `State`, `Polygon_Referenced_By_State` and `Polygon_Referenced_By_Country` table schemas.
+    - Execute `nigeria_state_dml.sql` to insert states into the `State` table schema.
 
 5. Configure environment variables:
     - Copy `.env_example` to `.env` and adjust values as per your MySQL database configuration.
@@ -291,7 +315,12 @@ Here's a step-by-step algorithm for breaking the map into squares, calculating w
 ### Notes
 
 - Adjust grid size, polygon extraction logic, and visualization parameters as per your specific requirements and dataset characteristics.
-- Use `map.py` for additional functionalities such as exporting polygons to various formats or customizing visual outputs.
+
+### Error Margins
+
+- Errors may be in the geojson, that is, it may not be as accurate as the map in Google Maps, so the error margin can be reduced by checking for more accurate geojson files for the country in study.
+- Errors may also be in the `read_geojson` function when trying to read a file referencing it by country because the topologies of the geojson may be wrong, the code tries to correct some polygons in the map before returning the `GeoDataFrame`, if the tolerance value is not enough, you can research on better ways to correct the topology or better still, get a more accurate map geojson file.
+- Errors may also be in the library reading the geojson file, which has not been researched, but the functionality is widely acceptable by millions of users.
 
 ## Conclusion
 

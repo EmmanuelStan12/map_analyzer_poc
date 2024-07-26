@@ -118,7 +118,7 @@ def build_geo_dataframe_from_polygons_by_country(polygons):
         'shape_area': [polygon.shape_area for polygon in polygons],
         'shape_length': [polygon.shape_length for polygon in polygons],
         'geometry': [Polygon(polygon.coordinates) for polygon in polygons],
-        'object_id': [polygon.object_id for polygon in polygons]
+        'object_id': [polygon.pid for polygon in polygons]
     }
 
     # Create a GeoDataFrame

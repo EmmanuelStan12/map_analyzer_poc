@@ -33,7 +33,6 @@ DROP TABLE IF EXISTS Polygon_Referenced_By_Country;
 CREATE TABLE Polygon_Referenced_By_Country
 (
     Id           BIGINT AUTO_INCREMENT PRIMARY KEY,
-    ObjectId     BIGINT       NULL,
     Shape_Area   FLOAT        NULL,
     Shape_Length FLOAT        NULL,
     Coordinates  GEOMETRY     NOT NULL

@@ -89,8 +89,7 @@ class PolygonReferencedByState:
             metadata_str = json.dumps(self.metadata)
             cursor.execute(insert_query, (
                 self.object_id, self.cap_city,
-                self.source, self.state.sid, self.shape_area, self.shape_length, self.geo_zone,
-                self.timestamp, self.created_at, self.updated_at,
+                self.source, self.state.sid, self.shape_area, self.shape_length, self.geo_zone, self.created_at, self.updated_at,
                 PolygonReferencedByState.coordinates_to_wkt_polygon(self.coordinates),
                 metadata_str
             ))

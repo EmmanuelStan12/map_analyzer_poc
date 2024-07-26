@@ -81,7 +81,6 @@ def create_country_polygon(geom, grid_height, grid_width, i, max_x, max_y, min_x
 
     # Create and return the PolygonReferencedByCountry object
     return PolygonReferencedByCountry(
-        object_id=props['objectid'],
         shape_area=props['shape_area'],
         shape_length=props['shape_len'],
         coordinates=coords

@@ -5,9 +5,8 @@ from app.src.data.polygon_referenced_by_state import PolygonReferencedByState
 
 class PolygonReferencedByCountry:
 
-    def __init__(self, pid=None, object_id=None, shape_area=None, shape_length=None, coordinates=None):
+    def __init__(self, pid=None, shape_area=None, shape_length=None, coordinates=None):
         self.pid = pid
-        self.object_id = object_id
         self.shape_area = shape_area
         self.shape_length = shape_length
         self.coordinates = coordinates
@@ -18,7 +17,6 @@ class PolygonReferencedByCountry:
         coordinates = list(polygon.exterior.coords)
         return cls(
             pid=row['Id'],
-            object_id=row['ObjectId'],
             shape_area=row['Shape_Area'],
             shape_length=row['Shape_Length'],
             coordinates=coordinates
@@ -28,14 +26,13 @@ class PolygonReferencedByCountry:
         cursor = conn.cursor()
         try:
             insert_query = """
-                INSERT INTO Polygon_Referenced_By_Country (ObjectId, Shape_Area, Shape_Length, Coordinates)
-                VALUES (%s, %s, %s, ST_GeomFromText(%s))
+                INSERT INTO Polygon_Referenced_By_Country (Shape_Area, Shape_Length, Coordinates)
+                VALUES (%s, %s, ST_GeomFromText(%s))
             """
 
-            cursor.execute(insert_query, (
-                self.object_id, self.shape_area, self.shape_length,
-                PolygonReferencedByState.coordinates_to_wkt_polygon(self.coordinates),
-            ))
+            cursor.execute(insert_query, (self.shape_area, self.shape_length,
+                                          PolygonReferencedByState.coordinates_to_wkt_polygon(self.coordinates),
+                                          ))
             conn.commit()
             print("GeoPolygon saved successfully!")
 
@@ -50,12 +47,11 @@ class PolygonReferencedByCountry:
         cursor = conn.cursor()
         try:
             insert_query = """
-                INSERT INTO Polygon_Referenced_By_Country (ObjectId, Shape_Area, Shape_Length, Coordinates)
-                VALUES (%s, %s, %s, ST_GeomFromText(%s))
+                INSERT INTO Polygon_Referenced_By_Country (Shape_Area, Shape_Length, Coordinates)
+                VALUES (%s, %s, ST_GeomFromText(%s))
             """
 
-            data = [(gp.object_id, gp.shape_area, gp.shape_length,
-                     PolygonReferencedByState.coordinates_to_wkt_polygon(gp.coordinates)) for gp in polygons]
+            data = [(gp.shape_area, gp.shape_length, PolygonReferencedByState.coordinates_to_wkt_polygon(gp.coordinates)) for gp in polygons]
 
             cursor.executemany(insert_query, data)
             conn.commit()
@@ -115,5 +111,3 @@ class PolygonReferencedByCountry:
 
     def __repr__(self):
         return f"<PolygonReferencedByCountry(Id={self.pid}, Coordinates={self.coordinates})>"
-
-
