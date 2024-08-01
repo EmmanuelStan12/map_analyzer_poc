@@ -1,39 +1,40 @@
 USE map_db;
 
-INSERT INTO State (Code, Name) VALUES ('AB', 'Abia');
-INSERT INTO State (Code, Name) VALUES ('AD', 'Adamawa');
-INSERT INTO State (Code, Name) VALUES ('AK', 'Akwa Ibom');
-INSERT INTO State (Code, Name) VALUES ('AN', 'Anambra');
-INSERT INTO State (Code, Name) VALUES ('BA', 'Bauchi');
-INSERT INTO State (Code, Name) VALUES ('BY', 'Bayelsa');
-INSERT INTO State (Code, Name) VALUES ('BE', 'Benue');
-INSERT INTO State (Code, Name) VALUES ('BO', 'Borno');
-INSERT INTO State (Code, Name) VALUES ('CR', 'Cross River');
-INSERT INTO State (Code, Name) VALUES ('DE', 'Delta');
-INSERT INTO State (Code, Name) VALUES ('EB', 'Ebonyi');
-INSERT INTO State (Code, Name) VALUES ('ED', 'Edo');
-INSERT INTO State (Code, Name) VALUES ('EK', 'Ekiti');
-INSERT INTO State (Code, Name) VALUES ('EN', 'Enugu');
-INSERT INTO State (Code, Name) VALUES ('FC', 'Federal Capital Territory');
-INSERT INTO State (Code, Name) VALUES ('GO', 'Gombe');
-INSERT INTO State (Code, Name) VALUES ('IM', 'Imo');
-INSERT INTO State (Code, Name) VALUES ('JI', 'Jigawa');
-INSERT INTO State (Code, Name) VALUES ('KD', 'Kaduna');
-INSERT INTO State (Code, Name) VALUES ('KN', 'Kano');
-INSERT INTO State (Code, Name) VALUES ('KT', 'Katsina');
-INSERT INTO State (Code, Name) VALUES ('KE', 'Kebbi');
-INSERT INTO State (Code, Name) VALUES ('KO', 'Kogi');
-INSERT INTO State (Code, Name) VALUES ('KW', 'Kwara');
-INSERT INTO State (Code, Name) VALUES ('LA', 'Lagos');
-INSERT INTO State (Code, Name) VALUES ('NA', 'Nasarawa');
-INSERT INTO State (Code, Name) VALUES ('NI', 'Niger');
-INSERT INTO State (Code, Name) VALUES ('OG', 'Ogun');
-INSERT INTO State (Code, Name) VALUES ('ON', 'Ondo');
-INSERT INTO State (Code, Name) VALUES ('OS', 'Osun');
-INSERT INTO State (Code, Name) VALUES ('OY', 'Oyo');
-INSERT INTO State (Code, Name) VALUES ('PL', 'Plateau');
-INSERT INTO State (Code, Name) VALUES ('RI', 'Rivers');
-INSERT INTO State (Code, Name) VALUES ('SO', 'Sokoto');
-INSERT INTO State (Code, Name) VALUES ('TA', 'Taraba');
-INSERT INTO State (Code, Name) VALUES ('YO', 'Yobe');
-INSERT INTO State (Code, Name) VALUES ('ZA', 'Zamfara');
+INSERT INTO State (Code, Name)
+VALUES ('AB', 'Abia'),
+       ('AD', 'Adamawa'),
+       ('AK', 'Akwa Ibom'),
+       ('AN', 'Anambra'),
+       ('BA', 'Bauchi'),
+       ('BY', 'Bayelsa'),
+       ('BE', 'Benue'),
+       ('BR', 'Borno'),
+       ('CR', 'Cross River'),
+       ('DE', 'Delta'),
+       ('EB', 'Ebonyi'),
+       ('ED', 'Edo'),
+       ('EK', 'Ekiti'),
+       ('EN', 'Enugu'),
+       ('FC', 'Federal Capital Territory'),
+       ('GO', 'Gombe'),
+       ('IM', 'Imo'),
+       ('JI', 'Jigawa'),
+       ('KD', 'Kaduna'),
+       ('KN', 'Kano'),
+       ('KT', 'Katsina'),
+       ('KB', 'Kebbi'),
+       ('KO', 'Kogi'),
+       ('KW', 'Kwara'),
+       ('LA', 'Lagos'),
+       ('NA', 'Nasarawa'),
+       ('NI', 'Niger'),
+       ('OG', 'Ogun'),
+       ('ON', 'Ondo'),
+       ('OS', 'Osun'),
+       ('OY', 'Oyo'),
+       ('PL', 'Plateau'),
+       ('RI', 'Rivers'),
+       ('SO', 'Sokoto'),
+       ('TA', 'Taraba'),
+       ('YO', 'Yobe'),
+       ('ZA', 'Zamfara');

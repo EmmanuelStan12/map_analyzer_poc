@@ -47,6 +47,8 @@ def create_state_polygon(geom, grid_height, grid_width, i, max_x, max_y, min_x, 
     state = None
     if code in states:
         state = states[code]
+    else:
+        print(f"Cannot find state with code: {code}")
 
     # Create and return the PolygonReferencedByState object
     return PolygonReferencedByState(
@@ -57,8 +59,6 @@ def create_state_polygon(geom, grid_height, grid_width, i, max_x, max_y, min_x, 
         shape_area=props_getter('shape_area'),
         shape_length=props_getter('shape_len'),
         geo_zone=props_getter('geozone'),
-        created_at=props_getter('created_at'),
-        updated_at=props_getter('updated_at'),
         coordinates=coords,
         metadata=metadata,
     )
@@ -84,7 +84,6 @@ def create_country_polygon(geom, grid_height, grid_width, i, max_x, max_y, min_x
     """
     # Extract coordinates from the geometry
     coords = list(geom.exterior.coords)
-
     props_getter = lambda key: props[key] if key in props else ''
 
     # Create and return the PolygonReferencedByCountry object

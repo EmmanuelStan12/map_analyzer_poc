@@ -21,8 +21,6 @@ CREATE TABLE Polygon_Referenced_By_State
     Shape_Area   FLOAT        NULL,
     Shape_Length FLOAT        NULL,
     Geo_Zone     VARCHAR(50)  NULL,
-    Created_At   DATETIME     NULL,
-    Updated_At   DATETIME     NULL,
     Coordinates  GEOMETRY     NOT NULL,
     Metadata     LONGTEXT     NULL,
     CONSTRAINT FOREIGN KEY (State_Id) REFERENCES State (Id)

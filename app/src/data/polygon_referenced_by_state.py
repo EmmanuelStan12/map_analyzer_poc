@@ -8,8 +8,7 @@ from app.src.data.state import State
 class PolygonReferencedByState:
 
     def __init__(self, pid=None, object_id=None, cap_city=None, state=None, source=None,
-                 shape_area=None, shape_length=None, geo_zone=None, created_at=None, updated_at=None,
-                 coordinates=None, metadata=None):
+                 shape_area=None, shape_length=None, geo_zone=None, coordinates=None, metadata=None):
         """
         Initialize a GeoPolygon object.
 
@@ -22,8 +21,6 @@ class PolygonReferencedByState:
             shape_area (float): Area of the polygon.
             shape_length (float): Perimeter of the polygon.
             geo_zone (str): Geographical zone.
-            created_at (str): Creation timestamp.
-            updated_at (str): Last update timestamp.
             coordinates (list of tuples): List of (longitude, latitude) coordinates defining the polygon.
             metadata (dict): Additional metadata associated with the polygon.
         """
@@ -35,8 +32,6 @@ class PolygonReferencedByState:
         self.shape_area = shape_area
         self.shape_length = shape_length
         self.geo_zone = geo_zone
-        self.created_at = created_at
-        self.updated_at = updated_at
         self.coordinates = coordinates
         self.metadata = metadata
 
@@ -70,8 +65,6 @@ class PolygonReferencedByState:
             shape_area=row['Shape_Area'],
             shape_length=row['Shape_Length'],
             geo_zone=row['Geo_Zone'],
-            created_at=row['Created_At'],
-            updated_at=row['Updated_At'],
             coordinates=coordinates,
             metadata=metadata,
         )
@@ -87,9 +80,8 @@ class PolygonReferencedByState:
         try:
             insert_query = """
             INSERT INTO Polygon_Referenced_By_State (ObjectId, CapCity, Source, State_Id,
-                                     Shape_Area, Shape_Length, Geo_Zone,
-                                     Timestamp, Created_At, Updated_At, Coordinates, Metadata)
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, ST_GeomFromText(%s), %s)
+                                     Shape_Area, Shape_Length, Geo_Zone, Coordinates, Metadata)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, ST_GeomFromText(%s), %s)
             """
 
             metadata_str = json.dumps(self.metadata)
@@ -98,7 +90,7 @@ class PolygonReferencedByState:
                 sid = self.state.sid
             cursor.execute(insert_query, (
                 self.object_id, self.cap_city,
-                self.source, sid, self.shape_area, self.shape_length, self.geo_zone, self.created_at, self.updated_at,
+                self.source, sid, self.shape_area, self.shape_length, self.geo_zone,
                 PolygonReferencedByState.coordinates_to_wkt_polygon(self.coordinates),
                 metadata_str
             ))
@@ -139,15 +131,13 @@ class PolygonReferencedByState:
         try:
             insert_query = """
             INSERT INTO Polygon_Referenced_By_State (ObjectId, CapCity, Source, State_Id,
-                                     Shape_Area, Shape_Length, Geo_Zone,
-                                     Created_At, Updated_At, Coordinates, Metadata)
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, ST_GeomFromText(%s), %s)
+                                     Shape_Area, Shape_Length, Geo_Zone, Coordinates, Metadata)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, ST_GeomFromText(%s), %s)
             """
 
             data = [(gp.object_id, gp.cap_city,
                      gp.source, gp.state.sid if gp.state is not None else None, gp.shape_area, gp.shape_length,
-                     gp.geo_zone, gp.created_at, gp.updated_at,
-                     PolygonReferencedByState.coordinates_to_wkt_polygon(gp.coordinates),
+                     gp.geo_zone, PolygonReferencedByState.coordinates_to_wkt_polygon(gp.coordinates),
                      json.dumps(gp.metadata))
                     for gp in polygons]
 
@@ -214,7 +204,7 @@ class PolygonReferencedByState:
             query = """
             SELECT gp.*, ST_AsText(Coordinates) AS Geometry_ST FROM Polygon_Referenced_By_State gp
             LEFT JOIN State AS s ON gp.State_Id = s.Id
-            WHERE s.Name IN ({})
+            WHERE s.Code IN ({})
             """.format(', '.join(['%s'] * len(states)))
 
             # Execute the query with the tuple of states
