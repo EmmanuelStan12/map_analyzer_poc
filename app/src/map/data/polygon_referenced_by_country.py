@@ -1,6 +1,6 @@
 from shapely import wkt
 
-from app.src.data.polygon_referenced_by_state import PolygonReferencedByState
+from app.src.map.data.polygon_referenced_by_state import PolygonReferencedByState
 
 
 class PolygonReferencedByCountry:

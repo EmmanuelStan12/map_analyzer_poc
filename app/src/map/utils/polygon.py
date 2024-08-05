@@ -1,6 +1,6 @@
-from app.src.data.polygon_referenced_by_country import PolygonReferencedByCountry
-from app.src.data.polygon_referenced_by_state import PolygonReferencedByState
-from app.src.data.state import State
+from app.src.map.data.polygon_referenced_by_country import PolygonReferencedByCountry
+from app.src.map.data.polygon_referenced_by_state import PolygonReferencedByState
+from app.src.map.data.state import State
 
 
 def create_state_polygon(geom, grid_height, grid_width, i, max_x, max_y, min_x, min_y, props):

@@ -4,13 +4,20 @@ from pykml.factory import KML_ElementMaker
 from enum import Enum, auto
 import pandas as pd
 
-from app.src.geo_df import build_geo_dataframe_from_polygons
+from app.src.map.utils.geo_df import build_geo_dataframe_from_polygons
 
 
 class ExportType(Enum):
-    HTML = auto()
-    KML = auto()
-    GEO_JSON = auto()
+    HTML = "html"
+    KML = "kml"
+    GEO_JSON = "geo_json"
+
+    @classmethod
+    def value_of(cls, value):
+        for member in cls:
+            if member.value == value:
+                return member
+        raise ValueError(f"{value} is not a valid {cls.__name__}")
 
 
 def export_to_geojson(polygons, **opts):
@@ -26,7 +33,11 @@ def export_to_geojson(polygons, **opts):
     file_path = opts.get('file_path')
     geo_df = build_geo_dataframe_from_polygons(polygons,
                                                False if referenced_by_country is None else referenced_by_country)
+    if file_path is None:
+        return geo_df.to_json()
+
     geo_df.to_file(file_path, driver="GeoJSON")
+
 
 
 def create_kml_placemark(polygon):
@@ -87,8 +98,13 @@ def export_to_kml(polygons, **opts):
 
     kml_document = KML_ElementMaker.kml(KML_ElementMaker.Document(*place_marks))
 
+    kml_str = etree.tostring(kml_document, pretty_print=True).decode('utf-8')
+
+    if file_path is None:
+        return kml_str
+
     with open(file_path, 'w') as file:
-        file.write(etree.tostring(kml_document, pretty_print=True).decode('utf-8'))
+        file.write(kml_str)
 
 
 def export_to_html(polygons, **opts):
@@ -129,6 +145,9 @@ def export_to_html(polygons, **opts):
     folium.LayerControl().add_to(folium_map)
 
     # Save the map as an HTML file
+    if file_path is None:
+        map_html = folium_map._repr_html_()
+        return map_html
     folium_map.save(file_path)
 
 
@@ -140,4 +159,5 @@ exports = {
 
 
 def export_geo_dataframe(polygons, export_type=ExportType.HTML, **opts):
-    exports[export_type](polygons, **opts)
+    return exports[export_type](polygons, **opts)
+

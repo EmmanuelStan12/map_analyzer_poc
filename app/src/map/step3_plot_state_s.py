@@ -2,10 +2,10 @@ import os
 
 from dotenv import load_dotenv
 
-from app.src.data.db import init_conn
-from app.src.data.polygon_referenced_by_state import PolygonReferencedByState
-from app.src.data.state import State
-from app.src.geo_df import build_geo_dataframe_from_polygons
+from app.src.map.data.db import init_conn
+from app.src.map.data.polygon_referenced_by_state import PolygonReferencedByState
+from app.src.map.data.state import State
+from app.src.map.utils.geo_df import build_geo_dataframe_from_polygons
 
 load_dotenv()
 

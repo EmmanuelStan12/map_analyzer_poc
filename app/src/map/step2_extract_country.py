@@ -1,8 +1,8 @@
 from dotenv import load_dotenv
 
-from app.src.data.db import init_conn
-from app.src.data.state import State
-from app.src.extract import extract_and_save_geojson_file_as_polygons
+from app.src.map.data.db import init_conn
+from app.src.map.data.state import State
+from app.src.map.utils.extract import extract_and_save_geojson_file_as_polygons
 
 load_dotenv()
 

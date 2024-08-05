@@ -2,7 +2,7 @@ import json
 from shapely.geometry import Polygon
 import shapely.wkt as wkt
 
-from app.src.data.state import State
+from app.src.map.data.state import State
 
 
 class PolygonReferencedByState:
