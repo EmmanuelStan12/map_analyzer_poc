@@ -17,7 +17,6 @@ This project demonstrates the handling and visualization of geospatial data usin
     - [Shapely](#shapely)
 - [Project Structure](#project-structure)
 - [GeoPolygon Data Structure](#geopolygon-data-structure)
-- [Usage](#usage)
 
 ## Introduction
 
@@ -52,6 +51,7 @@ The GeoPolygon project is designed to work with geospatial data, specifically po
 ## Setting Up the Environment
 
 To run the project, you need a working Python environment with the necessary libraries installed. Ensure you have a MySQL database set up with the required table schema to store the polygon data.
+Also, you'll need to set the `PYTHONPATH` variable in your process instance by executing `export PYTHONPATH=<project-path>`
 
 ## Why Python?
 
@@ -87,72 +87,150 @@ Shapely is a Python library for manipulation and analysis of planar geometric ob
 
 The project "map_analyzer_poc" has been extracted. Here's a detailed overview and explanation of the project, including the algorithms and how everything is implemented.
 
-### Project Structure
+Based on the extracted files, here's an updated README for the project:
 
-The project is structured as follows:
+## Project Structure
 
 ```
-map_analyzer_poc-master/
-├── .env_example
-├── .gitignore
-├── README.md
-└── app/
-    └── src/
-        ├── data/
-        │   ├── ddl.sql
-        │   ├── nigeria_state_dml.sql
-        │   ├── polygon_referenced_by_country.py
-        │   ├── polygon_referenced_by_state.py
-        │   └── state.py
-        ├── export.py
-        ├── extract.py
-        ├── grid.py
-        ├── main.py
-        ├── plot.py
-        ├── polygon.py
-        └── reader.py
+src/
+├── map/
+│   ├── step1_extract_states.py
+│   ├── step2_extract_country.py
+│   ├── step3_plot_state_s.py
+│   ├── step4_plot_point_s_ref_country.py
+│   ├── step4_plot_point_s_ref_state.py
+│   ├── step5_plot_all_ref_country.py
+│   ├── step5_plot_all_ref_states.py
+│   ├── data/
+│   │   ├── ddl.sql
+│   │   ├── polygon_referenced_by_state.py
+│   │   ├── nigeria_state_dml.sql
+│   │   ├── state.py
+│   │   ├── polygon_referenced_by_country.py
+│   │   ├── benin_state_dml.sql
+│   │   ├── db.py
+│   ├── utils/
+│   │   ├── reader.py
+│   │   ├── grid.py
+│   │   ├── polygon.py
+│   │   ├── export.py
+│   │   ├── geo_df.py
+│   │   ├── extract.py
+│   │   └── __pycache__/
+│   └── server/
+│       └── server.py
 ```
 
-### Files and Their Functions
+## Usage
 
-#### 1. `.env_example`
-This file is likely used to provide an example of environment variables that need to be set for the project to run correctly.
+### Running the Server
 
-#### 2. `.gitignore`
-This file specifies files and directories that should be ignored by git. Common entries might include logs, temporary files, and environment variable files.
+To start the Flask server, run:
 
-#### 3. `README.md`
-This file provides an overview of the project, its purpose, and how to set it up. It usually includes instructions on how to install dependencies, run the project, and any other relevant information.
+```bash
+python src/server/server.py
+```
 
-#### 4. `app/src/`
-This directory contains the main source code for the project.
+The server will be available at `http://127.0.0.1:5000/`.
 
-##### a. `data/`
-This subdirectory includes scripts and files related to data handling:
+## APIs
 
-- `ddl.sql` and `nigeria_state_dml.sql`: These files contain SQL scripts for data definition and data manipulation, respectively. They are used to create and populate the database tables.
-- `polygon_referenced_by_country.py`, `polygon_referenced_by_state.py`, `state.py`: These files contain Python classes that represent different entities in the project.
+### Endpoints
 
-##### b. `export.py`
-This script handles exporting data from the application to various formats, such as KML or GeoJSON.
+1. **Extract Polygons**
 
-##### c. `extract.py`
-This script is responsible for extracting relevant data from input sources. It likely includes functions to parse and extract data from GeoJSON files or other spatial data formats.
+   ```http
+   POST /extract-polygons/<reference>
+   ```
 
-##### d. `grid.py`
-This script manages the creation of grids on maps. It includes functions to create grid cells and assign spatial data to these cells.
+    - `reference`: `COUNTRY` or `STATE`
+    - Extracts and saves GeoJSON file as polygons based on the reference.
 
-##### e. `main.py`
-The main entry point of the application. This script initializes the application and orchestrates the execution of other scripts.
+2. **Plot Polygons by Point**
 
-##### f. `plot.py`
-This script handles plotting and visualization of spatial data. It includes functions to generate maps and other visual representations of the data.
+   ```http
+   GET /plot/<reference>/<latitude>/<longitude>/<export_type>
+   ```
 
-##### g. `polygon.py`
-This script includes functions and classes for handling polygon geometries, including creation, manipulation, and validation of polygons.
+    - `reference`: `STATE` or `COUNTRY`
+    - `latitude`: Latitude of the point.
+    - `longitude`: Longitude of the point.
+    - `export_type`: `html`, `kml`, or `geo_json`
+    - Plots polygons by point and exports in the specified format.
 
-##### h. `reader.py`
-This script includes functions to read and parse GeoJSON input files.
+3. **Plot State Polygons**
+
+   ```http
+   GET /plot/<export_type>
+   ```
+
+    - `export_type`: `html`, `kml`, or `geo_json`
+    - Plots state polygons and exports in the specified format.
+    - Query parameters:
+        - `state_codes`: List of state codes.
+
+## Scripts
+
+There are scripts that can help to perform some operations, this scripts can be run via the command line.
+
+- **Extract States**
+
+  ```bash
+  python src/map/step1_extract_states.py
+  ```
+
+- **Extract Country**
+
+  ```bash
+  python src/map/step2_extract_country.py
+  ```
+
+- **Plot State Polygons**
+
+  ```bash
+  python src/map/step3_plot_state_s.py
+  ```
+
+- **Plot Points Referenced by Country**
+
+  ```bash
+  python src/map/step4_plot_point_s_ref_country.py
+  ```
+
+- **Plot Points Referenced by State**
+
+  ```bash
+  python src/map/step4_plot_point_s_ref_state.py
+  ```
+
+- **Plot All Referenced by Country**
+
+  ```bash
+  python src/map/step5_plot_all_ref_country.py
+  ```
+
+- **Plot All Referenced by States**
+
+  ```bash
+  python src/map/step5_plot_all_ref_states.py
+  ```
+  
+## Database
+
+- **DDL and DML Scripts**
+
+  Located in `src/map/data/`
+
+    - `ddl.sql`: Contains the database schema definition.
+    - `nigeria_state_dml.sql`: Contains data for Nigeria states.
+    - `benin_state_dml.sql`: Contains data for Benin states.
+
+- **Database Models**
+
+    - `polygon_referenced_by_state.py`: Polygon model for states.
+    - `state.py`: State model.
+    - `polygon_referenced_by_country.py`: Polygon model for countries.
+    - `db.py`: Database connection and setup.
 
 ## GeoPolygon Data Structure
 
@@ -235,7 +313,7 @@ This explanation and reasons for the chosen structure applies to the `Polygon_Re
 Here's a step-by-step algorithm for breaking the map into squares, calculating width and height, and saving each polygon in its MySQL entry:
 
 #### Step 1: Read GeoJSON File
-- Read the GeoJSON file containing the map data (Check `read_geojson(path)`).
+- Read the GeoJSON file containing the map data.
 - This returns a GeoDataFrame data structure.
 - This can return a GeoDataFrame, which contains data relative to how the data desired, it could be relative to the state or country.
 - When it is relative to the state, the data frame formed are more and have more boundaries that determine the borders of states in the map.
@@ -243,24 +321,24 @@ Here's a step-by-step algorithm for breaking the map into squares, calculating w
 
 #### Step 2: Calculate Grid Parameters
 - Determine the grid cell dimensions (width and height) based on the desired square size (e.g., 50 km).
-- Use the latitude to calculate the approximate width and height in degrees (Check `kilometres_to_degrees(kilometres)`).
+- Use the latitude to calculate the approximate width and height in degrees.
 
 #### Step 3: Create Grid
 - Create a rectangular grid over the bounding box of the GeoDataFrame.
-- Use the calculated grid cell dimensions (in degrees) to define each grid cell (Check `create_grid(geo_df, grid_height, grid_width)`).
+- Use the calculated grid cell dimensions (in degrees) to define each grid cell.
 
 #### Step 4: Clip Grid with Map
 - Clip the grid cells with the map to retain only the intersecting areas.
-- This ensures that each grid cell corresponds to a valid geographic area within the map boundaries (Check `clip_grid(grid_geo_df, map_geo_df)`).
+- This ensures that each grid cell corresponds to a valid geographic area within the map boundaries.
 
 #### Step 5: Extract Polygons
 - Extract polygons from the clipped grid GeoDataFrame.
-- Convert each polygon into a GeoPolygon object, including its metadata and coordinates (Check `extract_polygons(geo_df, grid_height, grid_width, referenced_by_country)`).
+- Convert each polygon into a GeoPolygon object, including its metadata and coordinates.
 
 #### Step 6: Save to MySQL
 - Establish a connection to the MySQL database.
 - Define an SQL schema that includes fields for storing polygon attributes and the geometry.
-- Use SQL queries to insert each GeoPolygon object into the database, converting its coordinates to WKT format for storage (Check `<Polygon table>.batch_insert_geopolygon(conn, polygons)`).
+- Use SQL queries to insert each GeoPolygon object into the database, converting its coordinates to WKT format for storage.
 
 ### Additional Operations
 
@@ -271,50 +349,13 @@ Here's a step-by-step algorithm for breaking the map into squares, calculating w
     - Retrieve polygons based on state codes stored in the database, this only applies to `Polygon_Referenced_By_State` (Check `<Polygon table>.find_polygons_by_state(conn, states)`).
 
 - **Plot Polygons by Exporting as HTML:**
-    - Utilize Folium to export polygons as interactive HTML maps for visualization (Check `plot_geo_dataframe(geo_df, output_file)`).
+    - Utilize Folium to export polygons as interactive HTML maps for visualization.
 
 - **Export Polygons as KML:**
-    - Implement functionality to export polygons as KML files for use in other mapping applications (Check `export_to_kml(polygons, file_path, grid_height, grid_width)`).
+    - Implement functionality to export polygons as KML files for use in other mapping applications.
 
 - **Export Polygons as GeoJSON:**
-    - Implement functionality to export geo dataframes as GeoJSON file (Check `export_to_geojson(geo_df, file_path)`).
-
-## Usage
-
-### Pre-requisites
-
-1. Ensure you have Python installed. If not, download it from [Python Downloads](https://www.python.org/downloads/).
-2. Set up a virtual environment and activate it (Optional):
-    ```bash
-    python -m venv venv
-    # On Windows
-    venv\Scripts\activate
-    # On macOS/Linux
-    source venv/bin/activate
-    ```
-3. Install required libraries:
-    ```bash
-    pip install geopandas shapely folium pandas mysql-connector-python lxml pykml python-dotenv
-    ```
-4. Set up MySQL database:
-    - Create a database and execute the `ddl.sql` script to set up `State`, `Polygon_Referenced_By_State` and `Polygon_Referenced_By_Country` table schemas.
-    - Execute `nigeria_state_dml.sql` to insert states into the `State` table schema.
-
-5. Configure environment variables:
-    - Copy `.env_example` to `.env` and adjust values as per your MySQL database configuration.
-
-6. Review and run the Python scripts:
-    - Uncomment `extract_and_save_geojson_file()` function if it's the first run to populate your database with initial data.
-    - Ensure other functions such as polygon extraction, database operations, and visualizations are tailored to your needs.
-
-### Running the Project
-
-- Navigate to your project directory and execute `main.py` to initiate the operations defined in your scripts.
-- Monitor console output for any errors or progress updates as the scripts execute.
-
-### Notes
-
-- Adjust grid size, polygon extraction logic, and visualization parameters as per your specific requirements and dataset characteristics.
+    - Implement functionality to export geo dataframes as GeoJSON file.
 
 ### Error Margins
 
